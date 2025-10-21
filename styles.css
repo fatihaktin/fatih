@@ -1,47 +1,469 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
-}
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Projeler & Takım — Yıldızlı Template</title>
+<style>
+  /* ---------- TEMEL STİLLER ---------- */
+  :root{
+    --bg-dark:#030316;
+    --card-bg: rgba(255,255,255,0.04);
+    --glass: rgba(255,255,255,0.06);
+    --accent:#f5d84a; /* sıcak sarı - yıldız rengi */
+    --muted: rgba(255,255,255,0.75);
+    --glass-strong: rgba(0,0,0,0.4);
+    --radius:12px;
+    --max-width:1100px;
+    --gap:18px;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%;margin:0;background:var(--bg-dark);color: #fff;-webkit-font-smoothing:antialiased;}
+  a{color:var(--accent);text-decoration:none;}
+  .wrap{position:relative;min-height:100vh;overflow-x:hidden;}
 
-header {
-  background-color: #333;
-  color: white;
-  padding: 10px 0;
-  text-align: center;
-}
+  /* ---------- CANVAS (YILDIZLAR) ---------- */
+  canvas#bgStars {
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+    display:block;
+    pointer-events:none;
+    background: linear-gradient(180deg, rgba(3,6,22,0.45) 0%, rgba(1,2,10,0.9) 80%);
+  }
 
-header nav ul {
-  list-style: none;
-  padding: 0;
-}
+  /* ---------- İÇERİK KATLARI ---------- */
+  header, main, footer { position:relative; z-index:2; }
+  .container{max-width:var(--max-width);margin:0 auto;padding:24px;}
+  .hero{
+    min-height:38vh;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    padding-top:48px;
+    padding-bottom:48px;
+  }
+  .hero-card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border-radius:16px;
+    padding:28px;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+    width:100%;
+  }
+  .title{
+    font-size: clamp(20px, 4vw, 36px);
+    margin:0 0 8px 0;
+    color:#fff;
+    letter-spacing:0.02em;
+  }
+  .lead{ color:var(--muted); margin:0 0 18px 0; font-size:clamp(14px,2vw,16px);}
 
-header nav ul li {
-  display: inline;
-  margin: 0 10px;
-}
+  /* ---------- NAV (basit) ---------- */
+  nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;}
+  .brand{font-weight:700;color:var(--accent);}
+  .nav-links{display:flex;gap:12px;align-items:center;}
+  .btn{background:var(--accent);color:#111;padding:8px 12px;border-radius:10px;font-weight:600;}
 
-header nav ul li a {
-  color: white;
-  text-decoration: none;
-}
+  /* ---------- BÖLÜMLER: PROJELER ---------- */
+  section.projects{padding:30px 0;}
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    gap:var(--gap);
+  }
+  .card{
+    background:var(--card-bg);
+    border-radius:12px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-height:160px;
+    transition:transform .28s ease, box-shadow .28s ease;
+  }
+  .card:hover{ transform:translateY(-6px); box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+  .card h3{ margin:0;font-size:16px;color:#fff }
+  .card p{ margin:0; color:var(--muted); font-size:14px; flex:1; }
 
-section {
-  padding: 20px;
-}
+  /* ---------- TAKIM ---------- */
+  section.team{padding:30px 0;}
+  .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap);}
+  .person{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;padding:12px;text-align:center;
+  }
+  .person img{width:100%;height:160px;object-fit:cover;border-radius:10px;margin-bottom:10px;}
+  .person h4{margin:6px 0 2px 0;}
+  .person p{margin:0;color:var(--muted);font-size:13px;}
 
-.proje, .ekip-uyesi, .galeri img {
-  margin-bottom: 20px;
-}
+  /* ---------- GALERİ ---------- */
+  section.gallery{padding:30px 0;}
+  .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .gallery-grid img{width:100%;height:160px;object-fit:cover;border-radius:8px;cursor:pointer;display:block;transition:transform .18s ease;}
+  .gallery-grid img:hover{transform:scale(1.03);}
 
-.galeri {
-  display: flex;
-  gap: 10px;
-}
+  /* ---------- LIGHTBOX ---------- */
+  .lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;pointer-events:none;transition:opacity .22s ease;
+  }
+  .lightbox.open{opacity:1;pointer-events:auto;}
+  .lightbox img{max-width:92%;max-height:86%;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.7);}
 
-.galeri img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-}
+  /* ---------- FOOTER ---------- */
+  footer{padding:28px 0 60px 0;color:var(--muted);font-size:13px;}
+  .footer-row{display:flex;justify-content:space-between;gap:16px;align-items:center;}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:1100px){
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .team-grid{grid-template-columns:repeat(2,1fr);}
+    .gallery-grid{grid-template-columns:repeat(3,1fr);}
+  }
+  @media (max-width:720px){
+    .hero{flex-direction:column;}
+    .grid{grid-template-columns:1fr;}
+    .team-grid{grid-template-columns:1fr;}
+    .gallery-grid{grid-template-columns:repeat(2,1fr);}
+    .container{padding:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- ARKA PLAN CANVAS -->
+  <canvas id="bgStars" aria-hidden="true"></canvas>
+
+  <!-- HEADER / NAV -->
+  <header class="container">
+    <nav>
+      <div class="brand">Dijital Yıldızlar</div>
+      <div class="nav-links">
+        <a href="#projects">Projeler</a>
+        <a href="#team">Takım</a>
+        <a href="#gallery">Galeri</a>
+        <a class="btn" href="#contact">İletişim</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <main class="container">
+    <section class="hero">
+      <div class="hero-card">
+        <h1 class="title">Projelerimizi ve ekibimizi keşfedin</h1>
+        <p class="lead">Yenilikçi çözümler, güçlü takım ve canlı görsellerle projelerimizi tanıtıyoruz. Aşağıya kaydırarak projelere, ekibe ve fotoğraf galerisine ulaşabilirsiniz.</p>
+        <p style="margin:0;display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="#projects" class="btn">Projeleri Gör</a>
+          <a href="#gallery" style="padding:8px 12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);">Galeri</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- PROJELER -->
+    <section id="projects" class="projects">
+      <h2 style="margin:0 0 14px 0;">Projeler</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Proje A — Qfix Asistan</h3>
+          <p>Çağrı merkezi otomasyonu ve gerçek zamanlı konuşma analizi ile müşteri memnuniyetini artıran çözüm.</p>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <a href="#" style="font-size:13px;">Daha fazla</a>
+            <a href="#" style="font-size:13px;">Demo</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Proje B — Veri Görselleştirme</h3>
+          <p>Büyük veri setleri için interaktif gösterge panelleri ve içgörü-odaklı raporlama araçları.</p>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <a href="#" style="font-size:13px;">Daha fazla</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Proje C — Dijital Dönüşüm</h3>
+          <p>Kurumsal süreç otomasyonu, API entegrasyonları ve düşük kod çözümlerle hız kazandırma.</p>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <a href="#" style="font-size:13px;">Daha fazla</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- TAKIM -->
+    <section id="team" class="team">
+      <h2 style="margin:0 0 14px 0;">Takım</h2>
+      <div class="team-grid">
+        <div class="person">
+          <img src="https://images.unsplash.com/photo-1531123414780-fc8fbd3b6b2f?q=80&w=800&auto=format&fit=crop" alt="Profil 1">
+          <h4>Fatih Yılmaz</h4>
+          <p>Proje Yöneticisi</p>
+        </div>
+        <div class="person">
+          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop" alt="Profil 2">
+          <h4>Ayşe Demir</h4>
+          <p>UX/UI Tasarım</p>
+        </div>
+        <div class="person">
+          <img src="https://images.unsplash.com/photo-1545996124-0c5ac3b3c3f7?q=80&w=800&auto=format&fit=crop" alt="Profil 3">
+          <h4>Mehmet Can</h4>
+          <p>Ön Uç Geliştirici</p>
+        </div>
+        <div class="person">
+          <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=800&auto=format&fit=crop" alt="Profil 4">
+          <h4>Elif Ak</h4>
+          <p>Veri Mühendisi</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALERİ -->
+    <section id="gallery" class="gallery">
+      <h2 style="margin:0 0 14px 0;">Fotoğraf Galerisi</h2>
+      <div class="gallery-grid" id="galleryGrid">
+        <!-- Örnek görseller; barındırma yaparken değiştir -->
+        <img src="https://source.unsplash.com/collection/190727/800x600" alt="galeri1">
+        <img src="https://source.unsplash.com/collection/190728/800x600" alt="galeri2">
+        <img src="https://source.unsplash.com/collection/190729/800x600" alt="galeri3">
+        <img src="https://source.unsplash.com/collection/190730/800x600" alt="galeri4">
+        <img src="https://source.unsplash.com/collection/190731/800x600" alt="galeri5">
+        <img src="https://source.unsplash.com/collection/190732/800x600" alt="galeri6">
+        <img src="https://source.unsplash.com/collection/190733/800x600" alt="galeri7">
+        <img src="https://source.unsplash.com/collection/190734/800x600" alt="galeri8">
+      </div>
+    </section>
+
+    <!-- İLETİŞİM -->
+    <section id="contact" style="padding:20px 0 6px 0;">
+      <h2 style="margin:0 0 12px 0;">İletişim</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;background:var(--glass);padding:14px;border-radius:12px;">
+          <strong>Email</strong>
+          <div style="margin-top:6px;color:var(--muted)">info@orneksite.com</div>
+        </div>
+        <div style="flex:1;min-width:260px;background:var(--glass);padding:14px;border-radius:12px;">
+          <strong>Adres</strong>
+          <div style="margin-top:6px;color:var(--muted)">İstanbul, Türkiye</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="container">
+    <div class="footer-row">
+      <div>© <strong>Dijital Yıldızlar</strong> 2025</div>
+      <div style="color:var(--muted)">Hazır template — Google Sites için iFrame ile eklemeye uygun.</div>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-hidden="true">
+    <img id="lightboxImg" src="" alt="Büyütülmüş görüntü">
+  </div>
+</div>
+
+<!-- ---------- JAVASCRIPT: YILDIZLAR + GALERİ LIGHTBOX ---------- -->
+<script>
+/* ---------- NET SARI YILDIZLI ARKA PLAN (Retina-ready) ---------- */
+(() => {
+  const canvas = document.getElementById('bgStars');
+  const ctx = canvas.getContext('2d');
+
+  let W, H, DPR;
+  let stars = [];
+  let shooting = [];
+
+  const cfg = {
+    baseCount: 160,        // temel yıldız sayısı (ekran alanına göre ölçeklenecek)
+    minR: 0.4,
+    maxR: 2.2,
+    driftBase: -0.03,      // sola kayma
+    driftVar: 0.06,
+    twinkleSpeed: 0.004,
+    shootingRatePerSec: 0.06,
+    shootingMinSpeed: 10,
+    shootingMaxSpeed: 20,
+    starColor: [245,216,74] // sarı ton (RGB)
+  };
+
+  function setupSize(){
+    DPR = Math.max(window.devicePixelRatio || 1, 1);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    createStars();
+  }
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  function createStars(){
+    stars = [];
+    const area = W * H;
+    const target = Math.round(cfg.baseCount + area/140000 * 6); // ekran büyüdükçe artar
+    for (let i=0;i<target;i++){
+      stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        r: rand(cfg.minR, cfg.maxR),
+        baseAlpha: rand(0.4, 1.0),
+        phase: Math.random()*Math.PI*2,
+        drift: cfg.driftBase + rand(-cfg.driftVar, cfg.driftVar),
+        vy: rand(-0.02,0.02)
+      });
+    }
+  }
+
+  function spawnShooting(){
+    const fromRight = Math.random() > 0.5;
+    const startX = fromRight ? rand(W*0.55, W*0.98) : rand(W*0.02, W*0.45);
+    const startY = rand(H*0.02, H*0.45);
+    const angle = rand(0.25, 0.8); // radyan
+    const speed = rand(cfg.shootingMinSpeed, cfg.shootingMaxSpeed);
+    shooting.push({
+      x: startX, y: startY,
+      vx: Math.cos(angle) * (fromRight ? -speed : speed),
+      vy: Math.sin(angle) * speed * 0.9,
+      life:0,
+      maxLife: Math.round(220 / Math.abs(speed)),
+      length: rand(80,260),
+      alpha:1
+    });
+  }
+
+  let last = performance.now();
+  function loop(now){
+    const dt = now - last; last = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt){
+    // stars
+    for (const s of stars){
+      s.x += s.drift * (dt * 0.06);
+      s.y += s.vy * (dt * 0.06);
+      s.phase += cfg.twinkleSpeed * dt;
+      s.alpha = s.baseAlpha * (0.65 + 0.35 * Math.sin(s.phase));
+      if (s.x < -10) s.x = W + 10;
+      if (s.x > W + 10) s.x = -10;
+      if (s.y < -10) s.y = H + 10;
+      if (s.y > H + 10) s.y = -10;
+    }
+
+    // shooting spawn
+    if (Math.random() < cfg.shootingRatePerSec * (dt/1000)) spawnShooting();
+
+    // shooting update
+    for (let i = shooting.length - 1; i >= 0; --i){
+      const sh = shooting[i];
+      sh.x += sh.vx * (dt/16.67);
+      sh.y += sh.vy * (dt/16.67);
+      sh.life++;
+      sh.alpha -= 0.02 * (dt/16.67);
+      if (sh.life > sh.maxLife || sh.alpha <= 0) shooting.splice(i,1);
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // draw stars
+    for (const s of stars){
+      // renk sarı tonunda, alpha yıldızın parlamasına göre
+      const [r,g,b] = cfg.starColor;
+      const a = Math.max(0, Math.min(1, s.alpha));
+      if (s.r <= 0.7){
+        ctx.globalAlpha = a * 0.95;
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+      } else {
+        // glow for bigger stars
+        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*4);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${Math.min(1,a)})`);
+        grad.addColorStop(0.4, `rgba(${r},${g},${b},${Math.min(0.5,a*0.6)})`);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r*4, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+    // draw shooting stars
+    for (const sh of shooting){
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineWidth = 1.6 + (sh.length/180);
+      const grad = ctx.createLinearGradient(sh.x, sh.y, sh.x - sh.vx*2, sh.y - sh.vy*2);
+      grad.addColorStop(0, `rgba(255,240,175,${Math.max(0, sh.alpha)})`);
+      grad.addColorStop(1, `rgba(255,240,175,0)`);
+      ctx.strokeStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(sh.x, sh.y);
+      ctx.lineTo(sh.x - sh.vx * (sh.length/100), sh.y - sh.vy * (sh.length/100));
+      ctx.stroke();
+      // head
+      ctx.fillStyle = `rgba(255,250,200,${Math.max(0, sh.alpha)})`;
+      ctx.beginPath();
+      ctx.arc(sh.x, sh.y, 2.6 + (sh.alpha*2), 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  window.addEventListener('resize', () => { setupSize(); }, { passive:true });
+  setupSize();
+  requestAnimationFrame(loop);
+})();
+
+/* ---------- GALERİ LIGHTBOX ---------- */
+(() => {
+  const grid = document.getElementById('galleryGrid');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+
+  grid.addEventListener('click', (e) => {
+    const img = e.target.closest('img');
+    if (!img) return;
+    lightboxImg.src = img.src;
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  });
+
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox || e.target === lightboxImg) {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // ESC ile kapatma
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+  });
+})();
+
+/* ---------- NOT: Kaydırmayı rahatlatmak için - içerik üstünde yumuşak gölge ---------- */
+document.addEventListener('scroll', () => {
+  // opsiyonel: scroll'e hafif yüzde değeriyle içerik hareketi eklenebilir
+});
+</script>
+</body>
+</html>
